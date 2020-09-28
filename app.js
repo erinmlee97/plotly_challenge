@@ -107,10 +107,14 @@ d3.json("data/samples.json").then((data)=> {
                 borderwidth: 2,
                 bordercolor: "transparent",
                     steps: [
-                    { range: [0, 2], color: "rgba(0,115,0,0.2)" },
-                    { range: [2, 4], color: "rgba(0,115,0,0.4)" },
-                    { range: [4, 6], color: "rgba(0,115,0,0.6)" },
-                    { range: [6, 8], color: "rgba(0,115,0,0.8)" },
+                    { range: [0, 1], color: "rgba(0,115,0,0.1)" },
+                    { range: [1, 2], color: "rgba(0,115,0,0.2)" },
+                    { range: [2, 3], color: "rgba(0,115,0,0.3)" },
+                    { range: [3, 4], color: "rgba(0,115,0,0.4)" },
+                    { range: [4, 5], color: "rgba(0,115,0,0.5)" },
+                    { range: [5, 6], color: "rgba(0,115,0,0.6)" },
+                    { range: [6, 7], color: "rgba(0,115,0,0.7)" },
+                    { range: [7, 8], color: "rgba(0,115,0,0.8)" },
                     { range: [8, 9], color: "rgb(0,115,0)" },
                     ]}
         }];
