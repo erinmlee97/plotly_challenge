@@ -1,36 +1,60 @@
-// Create a function to build charts
-function buildCharts(id) {
-    // Ude d3 to pull in data
-    d3.json("data/samples.json").then((data)=> {
-        console.log(data)
-        // Find the wash frequency
-        var wfreq = data.metadata.map(d => d.wfreq)
-        console.log(`Washing Frequency: ${wfreq}`)
-        // filter samples by id
-        var samples = data.samples.filter(s => s.id.toString() === id)[0];
+// Use d3 to pull in data
+d3.json("data/samples.json").then((data)=> {
+    window.data = data
+    console.log(data)
+    var data = data
 
+    // Add id's to dropdown
+    var idList = data.names;
+    for (var i = 0; i < idList.length; i++) {
+      selectBox = d3.select("#selDataset");
+      selectBox.append("option").text(idList[i]);
+    }
+
+    // Set up default plot
+    buildPlots(0)
+
+    // Create a function to build charts
+    function buildPlots(index) {
+        // Pull data for plots
+        var samples = data.samples[index].otu_ids;
         console.log(samples);
-        // Get top 10 sample values for plot
-        var samplevalues = samples.sample_values.slice(0, 10).reverse();
-        // Get top 10 ids for plot
-        var OTU_top = (samples.otu_ids.slice(0, 10)).reverse();
+        var sampleValues = data.samples[index].sample_values;
+        var labels = data.samples[index].otu_labels;
+        var wfreq = data.metadata[+index].wfreq;
+        console.log(`Wash Freq: ${wfreq}`);
 
-        var OTU_id = OTU_top.map(d => "OTU " + d)
-        // Get top 10 labels for plot
-        var labels = samples.otu_labels.slice(0, 10);
+        // Populate Demographic Data card
+        var demoKeys = Object.keys(data.metadata[index]);
+        var demoValues = Object.values(data.metadata[index])
+        var demographicData = d3.select('#sample-metadata');
+  
+        // clear demographic data
+        demographicData.html("");
+  
+        for (var i = 0; i < demoKeys.length; i++) {
+            demographicData.append("p").text(`${demoKeys[i]}: ${demoValues[i]}`);
+      };
+
+        // Slice and reverse data for horizontal bar chart
+        var topSample = samples.slice(0, 10).reverse();
+        var topSampleValues = sampleValues.slice(0, 10).reverse();
+        var topToolTips = data.samples[0].otu_labels.slice(0, 10).reverse();
+        var topLabels = topSample.map((otu => "OTU " + otu));
+        var reversedLabels = topLabels.reverse();
 
         // Create Bar Graph
         var trace1 = {
-            x: samplevalues,
-            y: OTU_id,
-            text: labels,
+            x: topSampleValues,
+            y: reversedLabels,
+            text: topToolTips,
             marker: {
-              color: "teal"},
+            color: "teal"},
             type:"bar",
             orientation: "h",
         };
 
-        var data = [trace1];
+        var barData = [trace1];
 
         var layout = {
             title: "Top 10 OTU",
@@ -44,110 +68,81 @@ function buildCharts(id) {
                 b: 30
             }
         };
-        Plotly.newPlot("bar", data, layout);
+        Plotly.newPlot("bar", barData, layout);
 
         // Create Bubble Chart
         var trace2 = {
-            x: samples.otu_ids,
-            y: samples.sample_values,
+            x: samples,
+            y: sampleValues,
+            text: labels,
             mode: "markers",
             marker: {
-                size: samples.sample_values,
-                color: samples.otu_ids
+                size: sampleValues,
+                color: samples,
+                opacity: [1, 0.8, 0.6, 0.4]
             },
-            text: samples.otu_labels
-  
         };
 
-        var layout_b = {
-            xaxis:{title: "OTU ID"},
+        var layout2 = {
+            xaxis:{title: "OTU Frequency"},
             height: 600,
             width: 1000
         };
 
-        var data1 = [trace2];
+        var bubbleData = [trace2];
 
-        Plotly.newPlot("bubble", data1, layout_b); 
+        Plotly.newPlot("bubble", bubbleData, layout2); 
 
         // Create Gauge
-        var data_g = [
-            {
+        var trace3 = [{
             domain: { x: [0, 1], y: [0, 1] },
-            value: parseFloat(wfreq),
             title: { text: `Weekly Washing Frequency ` },
             type: "indicator",
-            
+            value: wfreq,
             mode: "gauge+number",
-            gauge: { axis: { range: [null, 9] },
-                     steps: [
-                      { range: [0, 2], color: "rgba(0,115,0,0.2)" },
-                      { range: [2, 4], color: "rgba(0,115,0,0.4)" },
-                      { range: [4, 6], color: "rgba(0,115,0,0.6)" },
-                      { range: [6, 8], color: "rgba(0,115,0,0.8)" },
-                      { range: [8, 9], color: "rgb(0,115,0)" },
+            gauge: {
+                axis: { range: [0, 9], tickwidth: 0.5, tickcolor: "black" },
+                bar: { color: "rgb(0,120,0)" },
+                bgcolor: "white",
+                borderwidth: 2,
+                bordercolor: "transparent",
+                    steps: [
+                    { range: [0, 2], color: "rgba(0,115,0,0.2)" },
+                    { range: [2, 4], color: "rgba(0,115,0,0.4)" },
+                    { range: [4, 6], color: "rgba(0,115,0,0.6)" },
+                    { range: [6, 8], color: "rgba(0,115,0,0.8)" },
+                    { range: [8, 9], color: "rgb(0,115,0)" },
                     ]}
-                
-            }
-          ];
-          var layout_g = { 
-              width: 700, 
-              height: 600, 
-              margin: { t: 20, b: 40, l:100, r:100 } 
+        }];
+
+        gaugeData = trace3;
+
+        var layout3 = { 
+            width: 700, 
+            height: 600, 
+            margin: { t: 20, b: 40, l:100, r:100 } 
             };
-          Plotly.newPlot("gauge", data_g, layout_g);
-    })
-};
+        Plotly.newPlot("gauge", gaugeData, layout3);
+    }
 
-// Create function to retrieve data
-function getData(id) {
-    // Use d3 to pull data
-    d3.json("data/samples.json").then((data)=> {
-        
-        // get the metadata info for the demographic panel
-        var metadata = data.metadata;
-        console.log(metadata)
+        // On button click, call refreshData()
+        d3.selectAll("#selDataset").on("change", optionChanged);
+  
 
-        // filter metadata
-        var result = metadata.filter(meta => meta.id.toString() === id)[0];
-
-        // Use d3 to select sample-metadata
-        var demographicInfo = d3.select("#sample-metadata");
-        
-        // empty the demographic info panel each time before getting new id info
-        demographicInfo.html("");
-
-        // grab the necessary demographic data data for the id and append the info to the panel
-        Object.entries(result).forEach((key) => {   
-                demographicInfo.append("h5").text(key[0].toUpperCase() + ": " + key[1] + "\n");    
-        });
-    });
-}
-
-// Create function for change event
-function optionChanged(id) {
-    buildCharts(id);
-    getData(id);
-}
-
-// create the function for the initial data rendering
-function init() {
-    // select dropdown menu 
-    var dropdown = d3.select("#selDataset");
-
-    // read the data 
-    d3.json("data/samples.json").then((data)=> {
-        console.log(data)
-
-        // Get the id data to the dropdwown menu
-        data.names.forEach(function(name) {
-            dropdown.append("option").text(name).property("value");
-        });
-
-        // Call the functions to display the data and the plots to the page
-        buildCharts(data.names[0]);
-        getData(data.names[0]);
-    });
-}
-
-init();
-
+        function optionChanged() {
+          var dropdownMenu = d3.select("#selDataset");
+          // Assign the value of the dropdown menu option to a variable
+          var personsID = dropdownMenu.property("value");
+          console.log(personsID);
+          // Initialize an empty array for the person's data
+          console.log(data)
+      
+          for (var i = 0; i < data.names.length; i++) {
+            if (personsID === data.names[i]) {
+              buildPlots(i);
+              return
+            }
+          }
+        }
+      
+      });
