@@ -86,7 +86,8 @@ d3.json("data/samples.json").then((data)=> {
         var layout2 = {
             xaxis:{title: "OTU Frequency"},
             height: 600,
-            width: 1000
+            width: 1153,
+            margin:{t: 50}
         };
 
         var bubbleData = [trace2];
@@ -122,9 +123,9 @@ d3.json("data/samples.json").then((data)=> {
         gaugeData = trace3;
 
         var layout3 = { 
-            width: 600, 
-            height: 600, 
-            margin: { t: 20, b: 40, l:100, r:100 } 
+            width: 470, 
+            height: 450, 
+            margin: { t: 20, b: 20, l:50, r:50 } 
             };
         Plotly.newPlot("gauge", gaugeData, layout3);
     }
