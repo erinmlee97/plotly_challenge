@@ -122,7 +122,7 @@ d3.json("data/samples.json").then((data)=> {
         gaugeData = trace3;
 
         var layout3 = { 
-            width: 700, 
+            width: 600, 
             height: 600, 
             margin: { t: 20, b: 40, l:100, r:100 } 
             };
